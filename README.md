@@ -1,0 +1,46 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# surveyExtras
+
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/szimmer/surveyExtras/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/szimmer/surveyExtras/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+The goal of surveyExtras is to add some helper functions to the use with
+the [survey](https://cran.r-project.org/package=survey) package.
+
+## Installation
+
+You can install the development version of surveyExtras from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("szimmer/surveyExtras")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(surveyExtras)
+library(survey)
+#> Loading required package: grid
+#> Loading required package: Matrix
+#> Loading required package: survival
+#> 
+#> Attaching package: 'survey'
+#> The following object is masked from 'package:graphics':
+#> 
+#>     dotchart
+data(api)
+dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+svyttest_pairwise(~api00, ~stype, dclus1)
+#>   label  contrast       se          t df.resid         p
+#> 1 E - H  30.29663 30.02761  1.0089591       12 0.3329065
+#> 2 E - M  17.42806 14.33739  1.2155668       12 0.2475237
+#> 3 H - M -12.86857 33.58624 -0.3831501       12 0.7083096
+```
