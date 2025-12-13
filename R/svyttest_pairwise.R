@@ -20,11 +20,12 @@
 #' \dontrun{
 #' svyttest_pairwise(~ api00 + api99, ~ stype + comp.imp, dclus1)
 #' }
+#' @export
 svyttest_pairwise <- function(formula, by, design, df.resid = survey::degf(design) - 2) {
   if (!inherits(formula, "formula")) {
     stop("formula must be a formula")
   }
-  if (length(labels(terms(formula))) != 1) {
+  if (length(labels(stats::terms(formula))) != 1) {
     stop("This function only works for one outcome variable. formula should only have one variable")
   }
   if (!inherits(by, "formula")) {
@@ -41,17 +42,17 @@ svyttest_pairwise <- function(formula, by, design, df.resid = survey::degf(desig
   if (nrow(means)==1){
     stop("Your by variable only has one level, it should have at least 2.")
   }
-  pairwise_combs <- combn(nrow(means), 2)
+  pairwise_combs <- utils::combn(nrow(means), 2)
   levs <- row.names(means)
   testi <- function(i) {
     contrast <- rep(0, nrow(means))
     contrast[pairwise_combs[, i]] <- c(1, -1)
     contlab <- paste(levs[pairwise_combs[, i]], collapse = " - ")
     cont <- survey::svycontrast(means, contrast)
-    est <- as.numeric(coef(cont))
+    est <- as.numeric(stats::coef(cont))
     se <- as.numeric(survey::SE(cont))
     tval <- est / se
-    p <- 2 * pt(-abs(tval), df.resid)
+    p <- 2 * stats::pt(-abs(tval), df.resid)
 
     data.frame(label = contlab, contrast = est, se = se, t = tval, df.resid = df.resid, p = p)
   }

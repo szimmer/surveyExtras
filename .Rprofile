@@ -1,3 +1,3 @@
 if (interactive()) {
-  suppressMessages(require(devtools))
+  require(devtools)
 }
