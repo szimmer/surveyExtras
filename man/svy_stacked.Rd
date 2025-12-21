@@ -33,3 +33,28 @@ svy_stacked(
 Calculate a t-test comparing a subpopulation to the overall population.
 For example, comparing a state estimate to the national or all adults to employed adults.
 }
+\examples{
+
+data(api, package="survey")
+svy_stacked(data = apistrat,
+            svydestype = "svydesign",
+            svydesargs = list(strata=~stype, weights=~pw),
+            outcome_variable = "api00",
+            subpop_variable = "stype"
+)
+
+if (rlang::is_installed("srvyrexploR")){
+  # Compare each northeastern state average energy expenditure to all the states in the northeast
+  data(recs_2020, package="srvyrexploR")
+  svy_stacked(
+    data = recs_2020,
+    svydestype = "svrepdesign",
+    svydesargs = list(weights = ~NWEIGHT, repweights = "NWEIGHT[1-9]+",
+                      type = "JK1", scale = 59/60, mse = TRUE),
+    outcome_variable = "TOTALDOL",
+    subpop_variable = "state_postal",
+    subset_statement = "REGIONC == 'NORTHEAST'",
+    dftype = "full"
+  )
+}
+}

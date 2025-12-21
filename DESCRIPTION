@@ -15,3 +15,5 @@ Imports:
     srvyr,
     survey
 URL: https://szimmer.github.io/surveyExtras/
+Suggests: 
+    srvyrexploR

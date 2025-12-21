@@ -10,6 +10,31 @@
 #' @param subpop_variable a variable, specified as character, which defines the subpopulation(s) comparing to the full population
 #' @param subset_statement (optional) any necessary subsetting to do before the analysis, specified as a character (e.g., "mpg > 4")
 #' @param dftype specify what type of degrees of freedom to use either specified as one of c("entire", "full", "sub") or a specified positive number where "entire" uses the degrees of freedom for the entire design, "full" uses the degrees of freedom for the design after applying the subset, this will be the same as "entire" if there is no subset, or "sub" which uses the degrees of freedom after applying both the subset and the subpopulation. Otherwise, if a number is specified, that is used as the degrees of freedom in all tests.
+#' @examples
+#'
+#' data(api, package="survey")
+#' svy_stacked(data = apistrat,
+#'             svydestype = "svydesign",
+#'             svydesargs = list(strata=~stype, weights=~pw),
+#'             outcome_variable = "api00",
+#'             subpop_variable = "stype"
+#' )
+#'
+#' if (rlang::is_installed("srvyrexploR")){
+#'   # Compare each northeastern state average energy expenditure to all the states in the northeast
+#'   data(recs_2020, package="srvyrexploR")
+#'   svy_stacked(
+#'     data = recs_2020,
+#'     svydestype = "svrepdesign",
+#'     svydesargs = list(weights = ~NWEIGHT, repweights = "NWEIGHT[1-9]+",
+#'                       type = "JK1", scale = 59/60, mse = TRUE),
+#'     outcome_variable = "TOTALDOL",
+#'     subpop_variable = "state_postal",
+#'     subset_statement = "REGIONC == 'NORTHEAST'",
+#'     dftype = "full"
+#'   )
+#' }
+#' @export
 svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydesargs, outcome_variable, subpop_variable, subset_statement = NULL, dftype = "sub") {
   if (!is.data.frame(data)) {
     stop("data must be a data frame or tibble")
@@ -17,7 +42,7 @@ svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydes
   if (!(svydestype %in% c("as_survey_design", "as_survey_rep", "svydesign", "svrepdesign"))) {
     stop('svydestype must be either "svydesign" or "svrepdesign"')
   }
-  if (!is.list(svydesargs)) {
+  if (!is.list(svydesargs) && is.data.frame(svydesargs)) {
     stop("svydesargs must be a list")
   }
   if ("data" %in% names(svydesargs)) {
@@ -41,12 +66,7 @@ svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydes
     stop("dftpe must either be one of 'entire', 'full', or 'sub' or a positive number")
   }
 
-  groupvar <- ".group"
-  cnt <- 0
-  while (groupvar %in% names(data)) {
-    cnt <- cnt + 1
-    groupvar <- paste0(".group", cnt)
-  }
+  groupvar <- make.names(c(names(data), ".group"), unique=TRUE)[ncol(data)+1]
 
   data_full <- data_sub <- data
   data_full[groupvar] <- "full"
@@ -54,7 +74,7 @@ svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydes
 
   svydesargs$data <- rbind(data_full, data_sub)
 
-  if (!any(c("ids", "id") %in% names(svydesargs))) {
+  if (svydestype == "svydesign" && !any(c("ids", "id") %in% names(svydesargs))) {
     svydesargs[["ids"]] <- ~1
     message("ids set to ~1 for design as none is provided.")
   }
@@ -63,8 +83,8 @@ svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydes
     switch(svydestype,
       # as_survey_design = do.call(srvyr::as_survey_design, svydesargs),
       # as_survey_rep = do.call(srvyr::as_survey_rep, svydesargs),
-      svydesign = do.call(survey::svydesign, svydesargs) |> srvyr::as_survey_design(),
-      svrepdesign = do.call(survey::svrepdesign, svydesargs) |> srvyr::as_survey_design(),
+      svydesign = do.call(survey::svydesign, svydesargs) |> srvyr::as_survey(),
+      svrepdesign = do.call(survey::svrepdesign, svydesargs) |> srvyr::as_survey()
     )
 
 
@@ -109,7 +129,7 @@ svy_stacked <- function(data, svydestype = c("svydesign", "svrepdesign"), svydes
     )
   }
 
-  subpop_levs <- unique(subset_des$variables[[subpop_variable]])
+  subpop_levs <- unique(subset_des$variables[[subpop_variable]]) |> sort()
 
   subpop_levs |>
     purrr::map(subtest) |>
