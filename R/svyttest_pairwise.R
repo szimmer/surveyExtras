@@ -39,7 +39,7 @@ svyttest_pairwise <- function(formula, by, design, df.resid = survey::degf(desig
   }
 
   means <- survey::svyby(formula, by, design, survey::svymean, covmat = TRUE)
-  if (nrow(means)==1){
+  if (nrow(means) == 1) {
     stop("Your by variable only has one level, it should have at least 2.")
   }
   pairwise_combs <- utils::combn(nrow(means), 2)
@@ -57,10 +57,10 @@ svyttest_pairwise <- function(formula, by, design, df.resid = survey::degf(desig
     data.frame(label = contlab, contrast = est, se = se, t = tval, df.resid = df.resid, p = p)
   }
 
-  if (nrow(means) > 2){
+  if (nrow(means) > 2) {
     res <- lapply(seq_len(nrow(means)), testi)
     do.call("rbind", res)
-  } else{
+  } else {
     testi(1)
   }
 }
