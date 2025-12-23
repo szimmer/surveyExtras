@@ -11,30 +11,40 @@ svy_stacked(
   outcome_variable,
   subpop_variable,
   subset_statement = NULL,
-  dftype = "sub"
+  dftype = "sub",
+  ddf = NULL
 )
 }
 \arguments{
 \item{data}{a data frame or tibble to look up formulas and necessary variables for design objects}
 
-\item{svydestype}{a character string indicating the type of survey design object to create. Options are "svydesign" or "svrepdesign".}
+\item{svydestype}{a character string indicating the type of survey design object to create.
+Options are "svydesign" or "svrepdesign".}
 
-\item{svydesargs}{a list of arguments to pass to the survey design constructor function \code{\link[survey:svydesign]{survey::svydesign()}} or \code{\link[survey:svrepdesign]{survey::svrepdesign()}}) - do NOT include the data.}
+\item{svydesargs}{a list of arguments to pass to the survey design constructor function}
 
-\item{outcome_variable}{an outcome variable, specified as a character, which is what the test is comparing}
+\item{outcome_variable}{an outcome variable, specified as a character}
 
-\item{subpop_variable}{a variable, specified as character, which defines the subpopulation(s) comparing to the full population}
+\item{subpop_variable}{a variable, specified as character, which defines the subpopulation(s)
+comparing to the full population}
 
-\item{subset_statement}{(optional) any necessary subsetting to do before the analysis, specified as a character (e.g., "mpg > 4")}
+\item{subset_statement}{(optional) any necessary subsetting to do before the analysis, specified
+as a character (e.g., "mpg > 4")}
 
-\item{dftype}{specify what type of degrees of freedom to use either specified as one of c("entire", "full", "sub") or a specified positive number where "entire" uses the degrees of freedom for the entire design, "full" uses the degrees of freedom for the design after applying the subset, this will be the same as "entire" if there is no subset, or "sub" which uses the degrees of freedom after applying both the subset and the subpopulation. Otherwise, if a number is specified, that is used as the degrees of freedom in all tests.}
+\item{dftype}{specify what type of degrees of freedom to use either specified as one of
+c("entire", "full", "sub", "manual") or a specified positive number where "entire" uses the
+degrees of freedom for the entire design, "full" uses the degrees of freedom for the design after
+applying the subset, this will be the same as "entire" if there is no subset, "sub" which uses
+the degrees of freedom after applying both the subset and the subpopulation or "manual" where the
+degrees of freedom is specified in ddf}
+
+\item{ddf}{a positive value for degrees of freedom if using manual degrees of freedom}
 }
 \description{
 Calculate a t-test comparing a subpopulation to the overall population.
 For example, comparing a state estimate to the national or all adults to employed adults.
 }
 \examples{
-
 data(api, package="survey")
 svy_stacked(data = apistrat,
             svydestype = "svydesign",

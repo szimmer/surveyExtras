@@ -10,10 +10,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     broom,
+    checkmate,
     purrr,
     rlang,
     srvyr,
-    survey
+    survey,
+    testthat
 URL: https://szimmer.github.io/surveyExtras/
 Suggests: 
     srvyrexploR
+Config/testthat/edition: 3
