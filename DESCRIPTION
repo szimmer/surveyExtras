@@ -18,5 +18,7 @@ Imports:
     testthat
 URL: https://szimmer.github.io/surveyExtras/
 Suggests: 
-    srvyrexploR
+    srvyrexploR (>= 1.1.0)
 Config/testthat/edition: 3
+Remotes:  
+    github::tidy-survey-r/srvyrexploR
