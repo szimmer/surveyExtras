@@ -6,13 +6,13 @@
 \usage{
 svy_stacked(
   data,
-  svydestype = c("svydesign", "svrepdesign"),
-  svydesargs,
+  svydestype = c("as_survey_design", "as_survey_rep", "svydesign", "svrepdesign"),
   outcome_variable,
   subpop_variable,
   subset_statement = NULL,
   dftype = "sub",
-  ddf = NULL
+  ddf = NULL,
+  ...
 )
 }
 \arguments{
@@ -20,8 +20,6 @@ svy_stacked(
 
 \item{svydestype}{a character string indicating the type of survey design object to create.
 Options are "svydesign" or "svrepdesign".}
-
-\item{svydesargs}{a list of arguments to pass to the survey design constructor function}
 
 \item{outcome_variable}{an outcome variable, specified as a character}
 
@@ -39,6 +37,10 @@ the degrees of freedom after applying both the subset and the subpopulation or "
 degrees of freedom is specified in ddf}
 
 \item{ddf}{a positive value for degrees of freedom if using manual degrees of freedom}
+
+\item{...}{arguments to pass to the survey design constructor function such as weights, strata,
+and cluster ids. See \code{\link[srvyr:as_survey_design]{srvyr::as_survey_design()}}, \code{\link[srvyr:as_survey_rep]{srvyr::as_survey_rep()}},
+\code{\link[survey:svydesign]{survey::svydesign()}}, or \code{\link[survey:svrepdesign]{survey::svrepdesign()}}) for more detail - do NOT include the data.}
 }
 \description{
 Calculate a t-test comparing a subpopulation to the overall population.
@@ -48,9 +50,21 @@ For example, comparing a state estimate to the national or all adults to employe
 data(api, package="survey")
 svy_stacked(data = apistrat,
             svydestype = "svydesign",
-            svydesargs = list(strata=~stype, weights=~pw),
             outcome_variable = "api00",
-            subpop_variable = "stype"
+            subpop_variable = "stype",
+            dftype = "sub",
+            strata = ~stype,
+            weights = ~pw,
+            ids = ~1
+)
+
+svy_stacked(data = apistrat,
+            svydestype = "as_survey_design",
+            outcome_variable = "api00",
+            subpop_variable = "stype",
+            dftype = "sub",
+            strata = stype,
+            weights = pw
 )
 
 if (rlang::is_installed("srvyrexploR")){
@@ -58,13 +72,16 @@ if (rlang::is_installed("srvyrexploR")){
   data(recs_2020, package="srvyrexploR")
   svy_stacked(
     data = recs_2020,
-    svydestype = "svrepdesign",
-    svydesargs = list(weights = ~NWEIGHT, repweights = "NWEIGHT[1-9]+",
-                      type = "JK1", scale = 59/60, mse = TRUE),
+    svydestype = "as_survey_rep",
     outcome_variable = "TOTALDOL",
     subpop_variable = "state_postal",
     subset_statement = "REGIONC == 'NORTHEAST'",
-    dftype = "full"
+    dftype = "full",
+    weights = NWEIGHT,
+    repweights = NWEIGHT1:NWEIGHT60,
+    type = "JK1",
+    scale = 59/60,
+    mse = TRUE
   )
 }
 }

@@ -6,8 +6,6 @@
 #' @param data a data frame or tibble to look up formulas and necessary variables for design objects
 #' @param svydestype a character string indicating the type of survey design object to create.
 #' Options are "svydesign" or "svrepdesign".
-#' @param svydesargs a list of arguments to pass to the survey design constructor function
-#" [survey::svydesign()] or [survey::svrepdesign()]) - do NOT include the data.
 #' @param outcome_variable an outcome variable, specified as a character
 #' @param subpop_variable a variable, specified as character, which defines the subpopulation(s)
 #' comparing to the full population
@@ -20,13 +18,28 @@
 #' the degrees of freedom after applying both the subset and the subpopulation or "manual" where the
 #' degrees of freedom is specified in ddf
 #' @param ddf a positive value for degrees of freedom if using manual degrees of freedom
+#' @param ... arguments to pass to the survey design constructor function such as weights, strata,
+#' and cluster ids. See [srvyr::as_survey_design()], [srvyr::as_survey_rep()],
+#' [survey::svydesign()], or [survey::svrepdesign()]) for more detail - do NOT include the data.
 #' @examples
 #' data(api, package="survey")
 #' svy_stacked(data = apistrat,
 #'             svydestype = "svydesign",
-#'             svydesargs = list(strata=~stype, weights=~pw),
 #'             outcome_variable = "api00",
-#'             subpop_variable = "stype"
+#'             subpop_variable = "stype",
+#'             dftype = "sub",
+#'             strata = ~stype,
+#'             weights = ~pw,
+#'             ids = ~1
+#' )
+#'
+#' svy_stacked(data = apistrat,
+#'             svydestype = "as_survey_design",
+#'             outcome_variable = "api00",
+#'             subpop_variable = "stype",
+#'             dftype = "sub",
+#'             strata = stype,
+#'             weights = pw
 #' )
 #'
 #' if (rlang::is_installed("srvyrexploR")){
@@ -34,26 +47,25 @@
 #'   data(recs_2020, package="srvyrexploR")
 #'   svy_stacked(
 #'     data = recs_2020,
-#'     svydestype = "svrepdesign",
-#'     svydesargs = list(weights = ~NWEIGHT, repweights = "NWEIGHT[1-9]+",
-#'                       type = "JK1", scale = 59/60, mse = TRUE),
+#'     svydestype = "as_survey_rep",
 #'     outcome_variable = "TOTALDOL",
 #'     subpop_variable = "state_postal",
 #'     subset_statement = "REGIONC == 'NORTHEAST'",
-#'     dftype = "full"
+#'     dftype = "full",
+#'     weights = NWEIGHT,
+#'     repweights = NWEIGHT1:NWEIGHT60,
+#'     type = "JK1",
+#'     scale = 59/60,
+#'     mse = TRUE
 #'   )
 #' }
 #' @export
 svy_stacked <- function(
-    data, svydestype = c("svydesign", "svrepdesign"), svydesargs, outcome_variable, subpop_variable,
-    subset_statement = NULL, dftype = "sub", ddf = NULL) {
+    data, svydestype = c("as_survey_design", "as_survey_rep", "svydesign", "svrepdesign"),
+    outcome_variable, subpop_variable, subset_statement = NULL, dftype = "sub", ddf = NULL, ...) {
   # Validate inputs
   checkmate::expect_data_frame(data)
-  checkmate::expect_choice(svydestype, c("svydesign", "svrepdesign"))
-  checkmate::expect_list(svydesargs)
-  if ("data" %in% names(svydesargs)) {
-    stop("'data' must NOT be included in 'svydesargs' because it is passed as a separate object")
-  }
+  svydestype <- match.arg(svydestype)
   checkmate::expect_character(outcome_variable, len=1, any.missing = FALSE)
   checkmate::expect_subset(outcome_variable, names(data))
   checkmate::expect_character(subpop_variable, len=1, any.missing = FALSE)
@@ -74,21 +86,16 @@ svy_stacked <- function(
   data_full[groupvar] <- "full"
   data_sub[groupvar] <- "sub"
 
-  svydesargs$data <- rbind(data_full, data_sub)
+  data_stacked <- rbind(data_full, data_sub)
 
   # Crate survey design object
 
-  if (svydestype == "svydesign" && !any(c("ids", "id") %in% names(svydesargs))) {
-    svydesargs[["ids"]] <- ~1
-    message("ids set to ~1 for design as none is provided.")
-  }
-
   stacked_des <-
     switch(svydestype,
-           # as_survey_design = do.call(srvyr::as_survey_design, svydesargs),
-           # as_survey_rep = do.call(srvyr::as_survey_rep, svydesargs),
-           svydesign = do.call(survey::svydesign, svydesargs) |> srvyr::as_survey(),
-           svrepdesign = do.call(survey::svrepdesign, svydesargs) |> srvyr::as_survey()
+           as_survey_design = srvyr::as_survey_design(.data=data_stacked, ...),
+           as_survey_rep = srvyr::as_survey_rep(.data=data_stacked, ...),
+           svydesign = survey::svydesign(data=data_stacked, ...) |> srvyr::as_survey(),
+           svrepdesign = survey::svrepdesign(data=data_stacked, ...) |> srvyr::as_survey()
     )
 
 
