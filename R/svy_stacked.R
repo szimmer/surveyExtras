@@ -22,29 +22,31 @@
 #' and cluster ids. See [srvyr::as_survey_design()], [srvyr::as_survey_rep()],
 #' [survey::svydesign()], or [survey::svrepdesign()]) for more detail - do NOT include the data.
 #' @examples
-#' data(api, package="survey")
-#' svy_stacked(data = apistrat,
-#'             svydestype = "svydesign",
-#'             outcome_variable = "api00",
-#'             subpop_variable = "stype",
-#'             dftype = "sub",
-#'             strata = ~stype,
-#'             weights = ~pw,
-#'             ids = ~1
+#' data(api, package = "survey")
+#' svy_stacked(
+#'   data = apistrat,
+#'   svydestype = "svydesign",
+#'   outcome_variable = "api00",
+#'   subpop_variable = "stype",
+#'   dftype = "sub",
+#'   strata = ~stype,
+#'   weights = ~pw,
+#'   ids = ~1
 #' )
 #'
-#' svy_stacked(data = apistrat,
-#'             svydestype = "as_survey_design",
-#'             outcome_variable = "api00",
-#'             subpop_variable = "stype",
-#'             dftype = "sub",
-#'             strata = stype,
-#'             weights = pw
+#' svy_stacked(
+#'   data = apistrat,
+#'   svydestype = "as_survey_design",
+#'   outcome_variable = "api00",
+#'   subpop_variable = "stype",
+#'   dftype = "sub",
+#'   strata = stype,
+#'   weights = pw
 #' )
 #'
-#' if (rlang::is_installed("srvyrexploR")){
+#' if (rlang::is_installed("srvyrexploR")) {
 #'   # Compare each northeastern state average energy expenditure to all the states in the northeast
-#'   data(recs_2020, package="srvyrexploR")
+#'   data(recs_2020, package = "srvyrexploR")
 #'   svy_stacked(
 #'     data = recs_2020,
 #'     svydestype = "as_survey_rep",
@@ -55,7 +57,7 @@
 #'     weights = NWEIGHT,
 #'     repweights = NWEIGHT1:NWEIGHT60,
 #'     type = "JK1",
-#'     scale = 59/60,
+#'     scale = 59 / 60,
 #'     mse = TRUE
 #'   )
 #' }
@@ -66,21 +68,21 @@ svy_stacked <- function(
   # Validate inputs
   checkmate::expect_data_frame(data)
   svydestype <- match.arg(svydestype)
-  checkmate::expect_character(outcome_variable, len=1, any.missing = FALSE)
+  checkmate::expect_character(outcome_variable, len = 1, any.missing = FALSE)
   checkmate::expect_subset(outcome_variable, names(data))
-  checkmate::expect_character(subpop_variable, len=1, any.missing = FALSE)
+  checkmate::expect_character(subpop_variable, len = 1, any.missing = FALSE)
   checkmate::expect_subset(subpop_variable, names(data))
-  checkmate::expect_character(subset_statement, len=1, any.missing = FALSE, null.ok = TRUE)
+  checkmate::expect_character(subset_statement, len = 1, any.missing = FALSE, null.ok = TRUE)
   checkmate::expect_choice(dftype, c("entire", "full", "sub", "manual"))
-  if (dftype=="manual"){
-    checkmate::expect_number(ddf, lower=.000000001)
-  } else{
+  if (dftype == "manual") {
+    checkmate::expect_number(ddf, lower = .000000001)
+  } else {
     testthat::expect_null(ddf)
   }
 
   # Stack data and create a group variable
 
-  groupvar <- make.names(c(names(data), ".group"), unique=TRUE)[ncol(data)+1]
+  groupvar <- make.names(c(names(data), ".group"), unique = TRUE)[ncol(data) + 1]
 
   data_full <- data_sub <- data
   data_full[groupvar] <- "full"
@@ -92,10 +94,10 @@ svy_stacked <- function(
 
   stacked_des <-
     switch(svydestype,
-           as_survey_design = srvyr::as_survey_design(.data=data_stacked, ...),
-           as_survey_rep = srvyr::as_survey_rep(.data=data_stacked, ...),
-           svydesign = survey::svydesign(data=data_stacked, ...) |> srvyr::as_survey(),
-           svrepdesign = survey::svrepdesign(data=data_stacked, ...) |> srvyr::as_survey()
+      as_survey_design = srvyr::as_survey_design(.data = data_stacked, ...),
+      as_survey_rep = srvyr::as_survey_rep(.data = data_stacked, ...),
+      svydesign = survey::svydesign(data = data_stacked, ...) |> srvyr::as_survey(),
+      svrepdesign = survey::svrepdesign(data = data_stacked, ...) |> srvyr::as_survey()
     )
 
 
@@ -114,7 +116,7 @@ svy_stacked <- function(
     dfuse <- survey::degf(subset_des)
   } else if (dftype == "sub") {
     dfuse <- NA
-  } else if (dftype == "manual"){
+  } else if (dftype == "manual") {
     dfuse <- ddf
   }
 

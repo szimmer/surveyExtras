@@ -47,29 +47,31 @@ Calculate a t-test comparing a subpopulation to the overall population.
 For example, comparing a state estimate to the national or all adults to employed adults.
 }
 \examples{
-data(api, package="survey")
-svy_stacked(data = apistrat,
-            svydestype = "svydesign",
-            outcome_variable = "api00",
-            subpop_variable = "stype",
-            dftype = "sub",
-            strata = ~stype,
-            weights = ~pw,
-            ids = ~1
+data(api, package = "survey")
+svy_stacked(
+  data = apistrat,
+  svydestype = "svydesign",
+  outcome_variable = "api00",
+  subpop_variable = "stype",
+  dftype = "sub",
+  strata = ~stype,
+  weights = ~pw,
+  ids = ~1
 )
 
-svy_stacked(data = apistrat,
-            svydestype = "as_survey_design",
-            outcome_variable = "api00",
-            subpop_variable = "stype",
-            dftype = "sub",
-            strata = stype,
-            weights = pw
+svy_stacked(
+  data = apistrat,
+  svydestype = "as_survey_design",
+  outcome_variable = "api00",
+  subpop_variable = "stype",
+  dftype = "sub",
+  strata = stype,
+  weights = pw
 )
 
-if (rlang::is_installed("srvyrexploR")){
+if (rlang::is_installed("srvyrexploR")) {
   # Compare each northeastern state average energy expenditure to all the states in the northeast
-  data(recs_2020, package="srvyrexploR")
+  data(recs_2020, package = "srvyrexploR")
   svy_stacked(
     data = recs_2020,
     svydestype = "as_survey_rep",
@@ -80,7 +82,7 @@ if (rlang::is_installed("srvyrexploR")){
     weights = NWEIGHT,
     repweights = NWEIGHT1:NWEIGHT60,
     type = "JK1",
-    scale = 59/60,
+    scale = 59 / 60,
     mse = TRUE
   )
 }
